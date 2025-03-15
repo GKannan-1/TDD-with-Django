@@ -1,0 +1,5 @@
+name: django_tdd_course
+dependencies:
+  - python = 3.13
+  - django = 5.1.*
+  - conda-forge::selenium = 4.*
