@@ -48,7 +48,8 @@ class NewVisitorTest(unittest.TestCase):
         rows: list[WebElement] = cast(
             Support, table).find_elements(By.TAG_NAME, "tr")
         self.assertTrue(
-            any(row.text == "1. Buy peacock feathers" for row in rows))
+            any(row.text == "1. Buy peacock feathers" for row in rows),
+            "New to-do item did not appear in table")
 
         # There is still a textbox inviting her to add another item
         # She enters "Use peacock feathers to make a fly"
