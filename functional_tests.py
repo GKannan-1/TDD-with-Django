@@ -44,19 +44,21 @@ class NewVisitorTest(unittest.TestCase):
         input_box.send_keys(Keys.ENTER)
         time.sleep(1)
 
-        table: WebElement = self.browser.find_element(By.ID, "id_list_table")
-        rows: list[WebElement] = cast(
-            Support, table).find_elements(By.TAG_NAME, "tr")
-        self.assertTrue(
-            any(row.text == "1. Buy peacock feathers" for row in rows),
-            "New to-do item did not appear in table")
-
         # There is still a textbox inviting her to add another item
         # She enters "Use peacock feathers to make a fly"
         # (Edith is very methodical)
-        self.fail("Finish the test!")
+        input_box = self.browser.find_element(By.ID, "id_new_item")
+        input_box.send_keys("Use peacock feathers to make a fly")
+        input_box.send_keys(Keys.ENTER)
+        time.sleep(1)
 
         # The page updates again, and now shows both items on her list
+        table: WebElement = self.browser.find_element(By.ID, "id_list_table")
+        rows: list[WebElement] = cast(
+            Support, table).find_elements(By.TAG_NAME, "tr")
+        self.assertIn("1: Buy peacock feathers", [row.text for row in rows],)
+        self.assertIn("2: Use peacock feathers to make a fly",
+                      [row.text for row in rows],)
 
         # Satisfied, she goes back to sleep
 
