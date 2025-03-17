@@ -1,11 +1,11 @@
 import time
 from django.test import LiveServerTestCase
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.common.exceptions import WebDriverException
 from typing import Protocol, cast
+from browser import get_browser
 
 MAX_WAIT = 5
 
@@ -18,7 +18,7 @@ class Support(Protocol):
 
 class NewVisitorTest(LiveServerTestCase):
     def setUp(self):
-        self.browser = webdriver.Safari()
+        self.browser = get_browser()
 
     def tearDown(self):
         self.browser.quit()
