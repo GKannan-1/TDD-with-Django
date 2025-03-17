@@ -4,7 +4,10 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.common.exceptions import WebDriverException
 from typing import Protocol, cast
+
+MAX_WAIT = 5
 
 
 class Support(Protocol):
@@ -20,11 +23,20 @@ class NewVisitorTest(LiveServerTestCase):
     def tearDown(self):
         self.browser.quit()
 
-    def check_for_row_in_list_table(self, row_text: str):
-        table: WebElement = self.browser.find_element(By.ID, "id_list_table")
-        rows: list[WebElement] = cast(
-            Support, table).find_elements(By.TAG_NAME, "tr")
-        self.assertIn(row_text, [row.text for row in rows],)
+    def wait_for_row_in_list_table(self, row_text: str):
+        start_time: float = time.time()
+        while True:
+            try:
+                table: WebElement = self.browser.find_element(
+                    By.ID, "id_list_table")
+                rows: list[WebElement] = cast(
+                    Support, table).find_elements(By.TAG_NAME, "tr")
+                self.assertIn(row_text, [row.text for row in rows],)
+                return
+            except (AssertionError, WebDriverException):
+                if time.time() - start_time > MAX_WAIT:
+                    raise
+                time.sleep(0.5)
 
     def test_can_start_a_todo_list(self):
         # Edith has heard about a cool new online to-do app
@@ -48,8 +60,7 @@ class NewVisitorTest(LiveServerTestCase):
         # When she hits enter, the page updates, and now the page lists
         # "1. Buy peacock feathers" as an item in a to-do list table
         input_box.send_keys(Keys.ENTER)
-        time.sleep(1)
-        self.check_for_row_in_list_table("1: Buy peacock feathers")
+        self.wait_for_row_in_list_table("1: Buy peacock feathers")
 
         # There is still a textbox inviting her to add another item
         # She enters "Use peacock feathers to make a fly"
@@ -57,11 +68,10 @@ class NewVisitorTest(LiveServerTestCase):
         input_box = self.browser.find_element(By.ID, "id_new_item")
         input_box.send_keys("Use peacock feathers to make a fly")
         input_box.send_keys(Keys.ENTER)
-        time.sleep(1)
 
         # The page updates again, and now shows both items on her list
-        self.check_for_row_in_list_table("1: Buy peacock feathers")
-        self.check_for_row_in_list_table(
+        self.wait_for_row_in_list_table("1: Buy peacock feathers")
+        self.wait_for_row_in_list_table(
             "2: Use peacock feathers to make a fly")
 
         # Satisfied, she goes back to sleep
