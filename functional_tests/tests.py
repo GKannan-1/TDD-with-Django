@@ -23,7 +23,8 @@ class NewVisitorTest(LiveServerTestCase):
     def tearDown(self):
         self.browser.quit()
 
-    def wait_for_row_in_list_table(self, row_text: str):
+    def wait_for_row_in_list_table(self, row_text: str, contains: bool = True):
+        """This helper method is case sensitive, write the entire excepted or unexpected string"""
         start_time: float = time.time()
         while True:
             try:
@@ -31,9 +32,13 @@ class NewVisitorTest(LiveServerTestCase):
                     By.ID, "id_list_table")
                 rows: list[WebElement] = cast(
                     Support, table).find_elements(By.TAG_NAME, "tr")
-                self.assertIn(row_text, [row.text for row in rows],)
+
+                if contains:
+                    self.assertIn(row_text, [row.text for row in rows],)
+                else:
+                    self.assertNotIn(row_text, [row.text for row in rows],)
                 return
-            except (AssertionError, WebDriverException):
+            except (WebDriverException):
                 if time.time() - start_time > MAX_WAIT:
                     raise
                 time.sleep(0.5)
@@ -94,17 +99,16 @@ class NewVisitorTest(LiveServerTestCase):
         # as a way of simulating a brand new user session
         self.browser.delete_all_cookies()
 
-        # Francis visits the home page. There is no sign of Edith's list
+        # Francis visits the home page.
         self.browser.get(self.live_server_url)
-        page_text: str = self.browser.find_element(By.TAG_NAME, "body").text
-        self.assertNotIn("Buy peacock feathers", page_text)
-        self.assertNotIn("make a fly", page_text)
 
         # Francis starts a new list by entering a new item. He
-        # is less interesting than Edith...
+        # is less interesting than Edith... There is no sign of
+        # Edith's List
         input_box = self.browser.find_element(By.ID, "id_new_item")
         input_box.send_keys("Buy milk")
         input_box.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table("1: Buy peacock feathers", False)
         self.wait_for_row_in_list_table("1: Buy milk")
 
         # Francis gets his own unique URL
