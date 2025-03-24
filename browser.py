@@ -7,5 +7,7 @@ def get_browser():
 
     if system == "Darwin":
         return webdriver.Safari()
+    elif system == "Windows":
+        return webdriver.Edge()
     else:
         return webdriver.Firefox()

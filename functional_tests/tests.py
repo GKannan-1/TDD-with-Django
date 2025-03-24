@@ -108,6 +108,9 @@ class NewVisitorTest(LiveServerTestCase):
         input_box = self.browser.find_element(By.ID, "id_new_item")
         input_box.send_keys("Buy milk")
         input_box.send_keys(Keys.ENTER)
+        # Technically only need to check for Buy milk because if buy peacock feathers existed, buy milk would be number 2. However, with this error
+        # It lets us know that Buy peacock feathers was saved as number 1, meaning it lets us know that the data was saved after reloading the cookies
+        # And not that the data was corrupted or the browser didn't load properly and the like.
         self.wait_for_row_in_list_table("1: Buy peacock feathers", False)
         self.wait_for_row_in_list_table("1: Buy milk")
 
